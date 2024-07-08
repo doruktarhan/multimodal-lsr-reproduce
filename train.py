@@ -61,7 +61,7 @@ def train(model: D2SModel, train_dataloader, val_dataset, num_epochs, loss_fnc: 
                     sparse_texts = model(
                         dense_texts, batch_tokenized_texts["input_ids"], batch_tokenized_texts["attention_mask"])
                 else:
-                    sparse_texts = model(dense_imgs)
+                    sparse_texts = model(dense_texts)
                 sparse_imgs = model(dense_imgs)
                 rel_loss, reg = loss_fnc(
                     sparse_texts, sparse_imgs, dense_texts, dense_imgs)
