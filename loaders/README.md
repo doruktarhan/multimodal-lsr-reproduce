@@ -1,0 +1,1 @@
+- In order to use the datasets, the golbal variable for images in the dataset.py file muts be changed.
