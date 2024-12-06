@@ -25,7 +25,7 @@ class MSCOCOdataset:
 
     def get_image_caption_pairs(self):
         if not self.meta_data:
-            raise ValueError("Meta data is not loaded. Call load_meta_data() first")
+            raise ValueError("Meta data is not loaded. Error on initlization of the dataset.")
         
         for image_data in tqdm(self.meta_data['images'], desc="Processing images and captions"):
             #save the image id
