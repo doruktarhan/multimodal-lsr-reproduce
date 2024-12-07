@@ -69,7 +69,6 @@ class CustomCollateFn:
         """
         # Filter out None entries from __getitem__ (e.g., missing images)
         batch = [item for item in batch if item is not None]
-        print(batch[0].keys())
 
         image_ids = [item["image_id"] for item in batch]
         caption_ids = [item["caption_id"] for item in batch]
@@ -90,7 +89,7 @@ class CustomCollateFn:
         }
 
 
-def create_data_loader(dataset, batch_size=64, num_workers=0,collate_fn=None):
+def create_data_loader(dataset, batch_size=64, num_workers=2,collate_fn=None):
     """
     Create a DataLoader object for the image caption pairs.
     Args:

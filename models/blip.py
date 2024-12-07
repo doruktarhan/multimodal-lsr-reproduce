@@ -12,8 +12,10 @@ class BLIP:
             model_name (str): The name of the model to be used.
         """
         self.name = 'blip'
-        self.device = torch.device(device if torch.cuda.is_available() else "cpu")
-        self.model = BlipForImageTextRetrieval.from_pretrained(MODEL_NAME)
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+        )
+        self.model = BlipForImageTextRetrieval.from_pretrained(MODEL_NAME).to(self.device)
         self.processor = AutoProcessor.from_pretrained(MODEL_NAME)
 
     def forward(self, batch):
