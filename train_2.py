@@ -161,7 +161,7 @@ def prepare_data(dataset_repo):
     dense_embs = load_dataset(dataset_repo, data_files={"img_emb": "image_embeddings.parquet",
                                                         "text_emb": "text_embeddings.parquet"}, keep_in_memory=True).with_format("numpy")
     meta_data = json.load(open(hf_hub_download(
-        repo_id=args.data, repo_type="dataset", filename="TextCaps_0.1_train.json")))
+        repo_id=args.data, repo_type="dataset", filename="metadata_split.json")))
     text_ids = dense_embs['text_emb']["id"]
     text_embs = dense_embs['text_emb']['embedding']
     img_ids = dense_embs['img_emb']['id']
