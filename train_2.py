@@ -20,7 +20,7 @@ from pathlib import Path
 from utils import write_trec_file
 from utils import cal_correaltion
 from torch.utils.data import DataLoader
-from data import *
+
 parser = argparse.ArgumentParser(description="Training Text-Image LSR models")
 parser.add_argument("--data", type=str,
                     default="alvarodelamaza/textcaps-blip-dense")
@@ -186,26 +186,24 @@ def prepare_data(dataset_repo):
 
     for image in tqdm(meta_data['data'], desc="Processing meta data."):
         image_id = str(image["image_id"])
-        caption_texts = [sent for sent in image["reference_strs"]]
-        caption_ids = [str(image["image_id"]+f'_{m}') for m in range(1,len(image["reference_strs"])+1)]
-        if image["caption_id"] < 100066000:
+        caption_texts = image["caption_str"]
+        caption_ids = str(image["caption_id"])
+        if image["type"] == "train":
             train_image_ids.append(image_id)
-            train_captions.extend(caption_texts)
-            train_caption_ids.extend(caption_ids)
-            train_pairs.extend([(sent_id, image_id)
-                               for sent_id in caption_ids])
-        if image['split'] >= 100066000 and image['split'] < 100088000 :
+            train_captions.append(caption_texts)
+            train_caption_ids.append(caption_ids)
+            train_pairs.extend([(caption_ids, image_id)])
+        if image['type'] == "val":
             val_image_ids.append(image_id)
-            val_captions.extend(caption_texts)
-            val_caption_ids.extend(caption_ids)
-            for sent_id in caption_ids:
-                val_qrels[sent_id][image_id] = 1
-        if image['split'] >= 100088000:
+            val_captions.append(caption_texts)
+            val_caption_ids.append(caption_ids)
+            val_qrels[caption_ids][image_id] = 1
+        if image['type'] == 'test':
             test_image_ids.append(image_id)
-            test_captions.extend(caption_texts)
-            test_caption_ids.extend(caption_ids)
-            for sent_id in caption_ids:
-                test_qrels[sent_id][image_id] = 1
+            test_captions.append(caption_texts)
+            test_caption_ids.append(caption_ids)
+            test_qrels[caption_ids][image_id] = 1
+                
     train_dataset = TrainDataset(
         dict(zip(train_caption_ids, train_captions)), txtid2row, imgid2row, text_embs, img_embs, train_pairs)
     val_text_collection = TextCollection(
