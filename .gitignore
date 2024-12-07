@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+/data
+image_embeddings.parquet
+text_embeddings.parquet
+TextCaps_0.1_train.json
 # Distribution / packaging
 .Python
 build/

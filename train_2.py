@@ -20,7 +20,7 @@ from pathlib import Path
 from utils import write_trec_file
 from utils import cal_correaltion
 from torch.utils.data import DataLoader
-
+from data import *
 parser = argparse.ArgumentParser(description="Training Text-Image LSR models")
 parser.add_argument("--data", type=str,
                     default="alvarodelamaza/textcaps-blip-dense")
@@ -158,14 +158,14 @@ def evaluate(model, dataset, shared_collator, mask_ratio=torch.tensor(0.0), retu
 
 
 def prepare_data(dataset_repo):
-    dense_embs = load_dataset(dataset_repo, data_files={"img_emb": "image_embbedings.parquet",
-                                                        "text_emb": "text_embbedings.parquet"}, keep_in_memory=True).with_format("numpy")
+    dense_embs = load_dataset(dataset_repo, data_files={"img_emb": "image_embeddings.parquet",
+                                                        "text_emb": "text_embeddings.parquet"}, keep_in_memory=True).with_format("numpy")
     meta_data = json.load(open(hf_hub_download(
         repo_id=args.data, repo_type="dataset", filename="TextCaps_0.1_train.json")))
-    text_ids = dense_embs['text_emb']["sentence_id"]
-    text_embs = dense_embs['text_emb']['embbedings']
-    img_ids = dense_embs['img_emb']['image_id']
-    img_embs = dense_embs['img_emb']['embbedings']
+    text_ids = dense_embs['text_emb']["id"]
+    text_embs = dense_embs['text_emb']['embedding']
+    img_ids = dense_embs['img_emb']['id']
+    img_embs = dense_embs['img_emb']['embedding']
     txtid2row = dict(zip(text_ids, range(len(text_ids))))
     imgid2row = dict(zip(img_ids, range(len(img_ids))))
 
@@ -188,19 +188,19 @@ def prepare_data(dataset_repo):
         image_id = str(image["image_id"])
         caption_texts = [sent for sent in image["reference_strs"]]
         caption_ids = [str(image["image_id"]+f'_{m}') for m in range(1,len(image["reference_strs"])+1)]
-        if image["split"] == "train":
+        if image["caption_id"] < 100066000:
             train_image_ids.append(image_id)
             train_captions.extend(caption_texts)
             train_caption_ids.extend(caption_ids)
             train_pairs.extend([(sent_id, image_id)
                                for sent_id in caption_ids])
-        if image['split'] == "val":
+        if image['split'] >= 100066000 and image['split'] < 100088000 :
             val_image_ids.append(image_id)
             val_captions.extend(caption_texts)
             val_caption_ids.extend(caption_ids)
             for sent_id in caption_ids:
                 val_qrels[sent_id][image_id] = 1
-        if image['split'] == 'test':
+        if image['split'] >= 100088000:
             test_image_ids.append(image_id)
             test_captions.extend(caption_texts)
             test_caption_ids.extend(caption_ids)
