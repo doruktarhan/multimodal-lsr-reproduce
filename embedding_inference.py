@@ -1,7 +1,7 @@
 import os
 import argparse
 from tqdm import tqdm
-from loaders.dataset import MSCOCOdataset
+from loaders.dataset import MSCOCOdataset, Flickr30kdataset
 from loaders.dataloader import ImageCaptionDataset, create_data_loader, CustomCollateFn
 from models.blip import BLIP
 import pandas as pd
@@ -40,8 +40,12 @@ def save_embeddings_to_parquet(image_embeddings, text_embeddings, image_ids, cap
 def main(args):
     # Dataset and metadata initialization
     if args.dataset_name == "mscoco":
-        meta_data_path = 'data/dataset_coco.json'
+        meta_data_path = 'meta_data/dataset_coco.json' # Path to the MSCOCO dataset
         dataset = MSCOCOdataset(meta_data_path)
+        image_caption_pairs = dataset.get_image_caption_pairs()
+    elif args.dataset_name == "flickr30k":
+        meta_data_path = 'meta_data/dataset_flickr30k.json' # Path to the MSCOCO dataset
+        dataset = Flickr30kdataset(meta_data_path)
         image_caption_pairs = dataset.get_image_caption_pairs()
     else:
         raise ValueError(f"Unsupported dataset: {args.dataset_name}")
@@ -94,8 +98,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset_name",
         type=str,
-        required=True,
-        choices=["mscoco"],  # Add more dataset options as you support them
+        choices=["mscoco","flickr30k"],  # Add more dataset options as you support them
+        default="flickr30k",
         help="Name of the dataset to use. Options: 'mscoco'.",
     )
     
@@ -103,8 +107,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_name",
         type=str,
-        required=True,
         choices=["blip"],  # Add more model options as you support them
+        default="blip",
         help="Name of the model to use for embedding extraction. Options: 'blip'.",
     )
     
