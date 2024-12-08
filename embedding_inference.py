@@ -7,7 +7,11 @@ from models.blip import BLIP
 import pandas as pd
 import shutil
 import zipfile
-from google.colab import drive
+
+# Global variable for image folder
+PATH_TO_MSCOCO_FOLDER = '/home/scur2879/multimodal-lsr-reproduce/multimodal-lsr-reproduce/image_data/flickr30k-images'
+PATH_TO_FLICKR_FOLDER = '/home/scur2879/multimodal-lsr-reproduce/multimodal-lsr-reproduce/image_data/flickr30k-images'
+
 
 
 def save_embeddings_to_parquet(image_embeddings, text_embeddings, image_ids, caption_ids, save_dir):
@@ -39,13 +43,6 @@ def save_embeddings_to_parquet(image_embeddings, text_embeddings, image_ids, cap
     text_df.to_parquet(text_parquet_path, engine="pyarrow")
     print(f"Saved text embeddings to {text_parquet_path}")
 
-def connect_to_drive():
-    """
-    Connects to Google Drive and mounts it.
-    """
-    print("Connecting to Google Drive...")
-    drive.mount('/content/drive')
-    print("Google Drive connected!")
 
 def download_and_prepare(base_dir, dataset_name, project_dir):
     """
@@ -99,22 +96,16 @@ def download_and_prepare(base_dir, dataset_name, project_dir):
 
 
 def main(args):
-    #connect to drive
-    connect_to_drive()
-
 
     # Dataset and metadata initialization
     if args.dataset_name == "mscoco":
         #download and prepare the dataset
-        download_and_prepare('/content/drive/MyDrive', 'MSCOCO_Dataset',os.getcwd())
         meta_data_path = 'meta_data/dataset_coco.json' # Path to the MSCOCO dataset
-        dataset = MSCOCOdataset(meta_data_path)
+        dataset = MSCOCOdataset(meta_data_path,PATH_TO_MSCOCO_FOLDER)
         image_caption_pairs = dataset.get_image_caption_pairs()
     elif args.dataset_name == "flickr30k":
-        #download and prepare the dataset
-        download_and_prepare('/content/drive/MyDrive', 'Flickr30k_Dataset',os.getcwd())
         meta_data_path = 'meta_data/dataset_flickr30k.json' # Path to the MSCOCO dataset
-        dataset = Flickr30kdataset(meta_data_path)
+        dataset = Flickr30kdataset(meta_data_path,PATH_TO_FLICKR_FOLDER)
         image_caption_pairs = dataset.get_image_caption_pairs()
     else:
         raise ValueError(f"Unsupported dataset: {args.dataset_name}")
