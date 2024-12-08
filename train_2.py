@@ -23,7 +23,7 @@ from torch.utils.data import DataLoader
 
 parser = argparse.ArgumentParser(description="Training Text-Image LSR models")
 parser.add_argument("--data", type=str,
-                    default="alvarodelamaza/textcaps-blip-dense")
+                    default="alvarodelamaza/textcaps-albef-dense")
 parser.add_argument("--train_batch_size", type=int,
                     default=512, help="train batch size")
 parser.add_argument("--eval_batch_size", type=int,
