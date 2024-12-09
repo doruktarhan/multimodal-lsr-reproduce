@@ -89,8 +89,10 @@ def main(args):
         all_caption_ids.extend(batch["caption_ids"])
         
 
+    save_dir = os.path.join(args.save_dir,f'{args.dataset_name}-{args.model_name}-dense')
+    os.makedirs(save_dir,exist_ok=True)
     # Save embeddings to Parquet files
-    save_embeddings_to_parquet(all_image_embeddings, all_text_embeddings, all_image_ids, all_caption_ids, args.save_dir)
+    save_embeddings_to_parquet(all_image_embeddings, all_text_embeddings, all_image_ids, all_caption_ids,save_dir )
 
 
 
