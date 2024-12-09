@@ -38,7 +38,7 @@ def save_embeddings_to_parquet(image_embeddings, text_embeddings, image_ids, cap
         "emb": [emb.tolist() for emb in image_embeddings]
     })
     text_parquet_path = os.path.join(save_dir, "text_embs.parquet")
-    text_df.to_parquet(text_parquet_path, engine="pyarrow")
+    text_df.to_parquet(text_parquet_path, engine="pyarrow",index = False)
     print(f"Saved text embeddings to {text_parquet_path}")
 
 

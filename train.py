@@ -23,7 +23,7 @@ from torch.utils.data import DataLoader
 
 parser = argparse.ArgumentParser(description="Training Text-Image LSR models")
 parser.add_argument("--data", type=str,
-                    default="lsr42/mscoco-blip-dense")
+                    default="doruktarhan6/flickr30k-blip-dense")
 parser.add_argument("--train_batch_size", type=int,
                     default=512, help="train batch size")
 parser.add_argument("--eval_batch_size", type=int,
@@ -161,9 +161,9 @@ def prepare_data(dataset_repo):
                                                         "text_emb": "text_embs.parquet"}, keep_in_memory=True).with_format("numpy")
     meta_data = json.load(open(hf_hub_download(
         repo_id=args.data, repo_type="dataset", filename="dataset_meta.json")))
-    text_ids = dense_embs['text_emb']["id"]
+    text_ids = [str(id) for id in dense_embs['text_emb']["id"]]
     text_embs = dense_embs['text_emb']['emb']
-    img_ids = dense_embs['img_emb']['id']
+    img_ids = [str(id) for id in dense_embs['img_emb']["id"]]
     img_embs = dense_embs['img_emb']['emb']
     txtid2row = dict(zip(text_ids, range(len(text_ids))))
     imgid2row = dict(zip(img_ids, range(len(img_ids))))
