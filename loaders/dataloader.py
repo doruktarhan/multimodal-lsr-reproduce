@@ -23,31 +23,28 @@ class ImageCaptionDataset:
     
     def __getitem__(self, idx):
         """
-        Fetch a single image_caption pair.
+        Fetch a single image-caption pair.
         Args:
-            idx (int): Index of the image_caption pair.
+            idx (int): Index of the image-caption pair.
         Returns:
             dict: {'image': image_tensor, 'caption': caption, image_id: image_id, caption_id: caption_id}
         """
         try:
             image_id, caption_id, image_path, caption = self.image_caption_pairs[idx]
-            image = Image.open(image_path)
+            with Image.open(image_path) as image:
+                if self.processor:
+                    processed = self.processor(images=image, return_tensors="pt")
+                    return {
+                        "image_id": image_id,
+                        "caption_id": caption_id,
+                        "pixel_values": processed["pixel_values"].squeeze(0),  # Remove batch dim
+                        "caption": caption,
+                    }
         except FileNotFoundError:
             print(f"Image not found: {image_path}")
-            return None
-        
-        if self.processor:
-            processed = self.processor(images=image, return_tensors="pt")
-            #use the tokenizer of the processor to use padding
-            
-            return {
-                "image_id": image_id,
-                "caption_id": caption_id,
-                "pixel_values": processed["pixel_values"].squeeze(0),  # Remove batch dim
-                "caption": caption,  
-            }
-        else:
-            raise ValueError("Processor is not defined.")
+        except OSError as e:
+            print(f"Corrupted image: {image_path}, Error: {e}")
+        return None  # Return None if any error occurs
 
 
 class CustomCollateFn:

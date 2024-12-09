@@ -7,7 +7,12 @@ from models.blip import BLIP
 import pandas as pd
 import shutil
 import zipfile
-from google.colab import drive
+from truncated_image_delete import remove_corrupted_images
+
+# Global variable for image folder
+PATH_TO_MSCOCO_FOLDER = '/home/scur2879/multimodal-lsr-reproduce/multimodal-lsr-reproduce/image_data_mscoco'
+PATH_TO_FLICKR_FOLDER = '/home/scur2879/multimodal-lsr-reproduce/multimodal-lsr-reproduce/image_data/flickr30k-images'
+
 
 
 def save_embeddings_to_parquet(image_embeddings, text_embeddings, image_ids, caption_ids, save_dir):
@@ -23,99 +28,39 @@ def save_embeddings_to_parquet(image_embeddings, text_embeddings, image_ids, cap
     """
     # Create a DataFrame for image embeddings
     img_df = pd.DataFrame({
-        "index": image_ids,
-        "embedding": [emb.tolist() for emb in image_embeddings]
-    })
+        "id": image_ids,
+        "emb": [emb.tolist() for emb in image_embeddings]
+    }).drop_duplicates(subset="id", keep="first")
     img_parquet_path = os.path.join(save_dir, "img_embs.parquet")
     img_df.to_parquet(img_parquet_path, engine="pyarrow")
     print(f"Saved image embeddings to {img_parquet_path}")
 
     # Create a DataFrame for text embeddings
     text_df = pd.DataFrame({
-        "index": caption_ids,
-        "embedding": [emb.tolist() for emb in text_embeddings]
-    })
+        "id": caption_ids,
+        "emb": [emb.tolist() for emb in text_embeddings]
+    }).drop_duplicates(subset="id", keep="first")
     text_parquet_path = os.path.join(save_dir, "text_embs.parquet")
-    text_df.to_parquet(text_parquet_path, engine="pyarrow")
+    text_df.to_parquet(text_parquet_path, engine="pyarrow",index = False)
     print(f"Saved text embeddings to {text_parquet_path}")
-
-def connect_to_drive():
-    """
-    Connects to Google Drive and mounts it.
-    """
-    print("Connecting to Google Drive...")
-    drive.mount('/content/drive')
-    print("Google Drive connected!")
-
-def download_and_prepare(base_dir, dataset_name, project_dir):
-    """
-    Downloads and unzips dataset files from Google Drive to the local project directory.
-    
-    Args:
-        base_dir (str): Base directory where datasets are stored in Google Drive.
-        dataset_name (str): Name of the dataset (e.g., 'MSCOCO_dataset', 'Flickr30k_dataset').
-        project_dir (str): Path to the local project directory where files will be saved.
-    """
-    # Define paths in Google Drive
-    dataset_path = os.path.join(base_dir, dataset_name)
-    data_path = os.path.join(dataset_path, "data")
-    meta_data_path = os.path.join(dataset_path, "meta_data")
-
-    # Check if the paths exist in Google Drive
-    if not os.path.exists(data_path):
-        raise FileNotFoundError(f"Data path not found in Google Drive: {data_path}")
-    if not os.path.exists(meta_data_path):
-        raise FileNotFoundError(f"Meta-data path not found in Google Drive: {meta_data_path}")
-
-    # Create local directories for data and meta-data
-    local_data_dir = os.path.join(project_dir, "data")
-    local_meta_data_dir = os.path.join(project_dir, "meta_data")
-    os.makedirs(local_data_dir, exist_ok=True)
-    os.makedirs(local_meta_data_dir, exist_ok=True)
-
-    # Download and unzip files from the 'data' directory
-    for file_name in os.listdir(data_path):
-        file_path = os.path.join(data_path, file_name)
-        local_file_path = os.path.join(local_data_dir, file_name)
-
-        if file_name.endswith(".zip"):
-            print(f"Downloading and unzipping: {file_name} ...")
-            shutil.copy(file_path, local_file_path)  # Copy zip file locally
-            with zipfile.ZipFile(local_file_path, 'r') as zip_ref:
-                zip_ref.extractall(local_data_dir)  # Unzip into the local 'data' directory
-            os.remove(local_file_path)  # Remove the zip file after extraction
-            print(f"Unzipped to: {local_data_dir}")
-        else:
-            print(f"Skipping non-zip file: {file_name}")
-
-    # Copy the JSON meta-data file to the local 'meta_data' directory
-    for meta_file in os.listdir(meta_data_path):
-        if meta_file.endswith(".json"):
-            print(f"Downloading meta-data: {meta_file} ...")
-            shutil.copy(os.path.join(meta_data_path, meta_file), local_meta_data_dir)
-
-    print(f"All files for {dataset_name} have been downloaded and prepared in {project_dir}")
 
 
 
 def main(args):
-    #connect to drive
-    connect_to_drive()
-
 
     # Dataset and metadata initialization
     if args.dataset_name == "mscoco":
-        #download and prepare the dataset
-        download_and_prepare('/content/drive/MyDrive', 'MSCOCO_Dataset',os.getcwd())
         meta_data_path = 'meta_data/dataset_coco.json' # Path to the MSCOCO dataset
-        dataset = MSCOCOdataset(meta_data_path)
+        #find_and_remove_corrupted_images(PATH_TO_MSCOCO_FOLDER)
+        dataset = MSCOCOdataset(meta_data_path,PATH_TO_MSCOCO_FOLDER)
         image_caption_pairs = dataset.get_image_caption_pairs()
+        print(f'Number of image caption pairs found {len(image_caption_pairs)}')
     elif args.dataset_name == "flickr30k":
-        #download and prepare the dataset
-        download_and_prepare('/content/drive/MyDrive', 'Flickr30k_Dataset',os.getcwd())
         meta_data_path = 'meta_data/dataset_flickr30k.json' # Path to the MSCOCO dataset
-        dataset = Flickr30kdataset(meta_data_path)
+        #find_and_remove_corrupted_images(PATH_TO_FLICKR_FOLDER)
+        dataset = Flickr30kdataset(meta_data_path,PATH_TO_FLICKR_FOLDER)
         image_caption_pairs = dataset.get_image_caption_pairs()
+        print(f'Number of image caption pairs found {len(image_caption_pairs)}')
     else:
         raise ValueError(f"Unsupported dataset: {args.dataset_name}")
 
@@ -150,8 +95,10 @@ def main(args):
         all_caption_ids.extend(batch["caption_ids"])
         
 
+    save_dir = os.path.join(args.save_dir,f'{args.dataset_name}-{args.model_name}-dense')
+    os.makedirs(save_dir,exist_ok=True)
     # Save embeddings to Parquet files
-    save_embeddings_to_parquet(all_image_embeddings, all_text_embeddings, all_image_ids, all_caption_ids, args.save_dir)
+    save_embeddings_to_parquet(all_image_embeddings, all_text_embeddings, all_image_ids, all_caption_ids,save_dir )
 
 
 
