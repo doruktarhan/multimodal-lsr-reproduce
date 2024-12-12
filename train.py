@@ -37,8 +37,10 @@ parser.add_argument("--q_reg", type=float, default=2e-2,
                     help="Learning rate for sparse projectors")
 parser.add_argument("--d_reg", type=float, default=2e-2,
                     help="Learning rate for sparse projectors")
+parser.add_argument("--ov_pen", type=float, default=1e-3, help="Overuse penalty rate")
 args = parser.parse_args()
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
+# device = "cuda:0" if torch.cuda.is_available() else "cpu"
+device = "mps" if torch.backends.mps.is_available() else "cpu"
 
 
 def train(model: D2SModel, train_dataloader, val_dataset, num_epochs, loss_fnc: OverusePenaltyLoss,  optimizer, scheduler, scaler, highest_recall_1):
@@ -244,7 +246,7 @@ if __name__ == "__main__":
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=num_warm_up, num_training_steps=num_training_steps)
     loss = OverusePenaltyLoss(temp=temp, q_reg=args.q_reg,
-                    d_reg=args.d_reg, T=num_warm_up)
+                    d_reg=args.d_reg, T=num_warm_up, lambda_I=args.ov_pen, lambda_T=args.ov_pen)
     scaler = torch.cuda.amp.GradScaler(enabled=args.use_amp)
     test_dense_run, recall1, recall5, recall10, mrr10, dense_flops = evaluate(
         model, test_dataset, vector_collator, dense=True, return_run_file=True)

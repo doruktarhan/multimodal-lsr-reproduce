@@ -15,11 +15,8 @@ class OverusePenaltyLoss(nn.Module):
 
     def overuse_penalty(self, sparse_representations):
         N, V = sparse_representations.size()
-        print(sparse_representations)
-        print(sparse_representations.mean(dim=0))
         avg_activation = sparse_representations.mean(dim=0)  # Average activation per vocabulary term
         penalty = (avg_activation ** 3).sum() / avg_activation.sum()
-        print(penalty)
         return penalty
 
     def forward(self, sparse_texts, sparse_imgs, dense_texts, dense_imgs):
