@@ -9,4 +9,4 @@ unzip '*.zip'
  'image_data/flickr30k-images'
 
 - run the code with following
-python embedding_inference.py --dataset_name flickr30k --model_name blip --batch_size 16 --save_dir embeddings
+python embedding_inference.py --dataset_name mscoco --model_name blip2avg --batch_size 128 --save_dir embeddings
