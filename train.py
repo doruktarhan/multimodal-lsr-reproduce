@@ -1,4 +1,5 @@
 from loss import BICELoss
+from newloss import OverusePenaltyLoss
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download
 from collections import defaultdict
@@ -36,11 +37,13 @@ parser.add_argument("--q_reg", type=float, default=2e-2,
                     help="Learning rate for sparse projectors")
 parser.add_argument("--d_reg", type=float, default=2e-2,
                     help="Learning rate for sparse projectors")
+parser.add_argument("--ov_pen", type=float, default=1e-3, help="Overuse penalty rate")
 args = parser.parse_args()
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
+# device = "cuda:0" if torch.cuda.is_available() else "cpu"
+device = "mps" if torch.backends.mps.is_available() else "cpu"
 
 
-def train(model: D2SModel, train_dataloader, val_dataset, num_epochs, loss_fnc: BICELoss,  optimizer, scheduler, scaler, highest_recall_1):
+def train(model: D2SModel, train_dataloader, val_dataset, num_epochs, loss_fnc: OverusePenaltyLoss,  optimizer, scheduler, scaler, highest_recall_1):
     mask_ratio = torch.tensor(1.0)
     step = mask_ratio/(num_epochs*0.95)
     for epoch_idx, epoch in enumerate(range(0, num_epochs)):
@@ -67,7 +70,7 @@ def train(model: D2SModel, train_dataloader, val_dataset, num_epochs, loss_fnc: 
                     sparse_texts, sparse_imgs, dense_texts, dense_imgs)
                 batch_rel_loss += rel_loss.item()
                 batch_reg += reg
-                loss = rel_loss + reg
+                loss = rel_loss
                 batch_loss += loss.item()
                 q_len.append((sparse_texts > 0).float().sum(dim=-1).mean())
                 d_len.append((sparse_imgs > 0).float().sum(dim=-1).mean())
@@ -243,8 +246,8 @@ if __name__ == "__main__":
     num_warm_up = int(num_training_steps * 0.2)
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=num_warm_up, num_training_steps=num_training_steps)
-    loss = BICELoss(temp=temp, q_reg=args.q_reg,
-                    d_reg=args.d_reg, T=num_warm_up)
+    loss = OverusePenaltyLoss(temp=temp, q_reg=args.q_reg,
+                    d_reg=args.d_reg, T=num_warm_up, lambda_I=args.ov_pen, lambda_T=args.ov_pen)
     scaler = torch.cuda.amp.GradScaler(enabled=args.use_amp)
     test_dense_run, recall1, recall5, recall10, mrr10, dense_flops = evaluate(
         model, test_dataset, vector_collator, dense=True, return_run_file=True)
