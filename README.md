@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/736745722.svg)](https://zenodo.org/doi/10.5281/zenodo.10659509)
 
-# Multimodal Learned Sparse Retrieval 
+# Reproducibility Study: Multimodal Learned Sparse Retrieval 
 
 ### 1. Create conda environment and install dependencies: 
 
@@ -82,7 +82,7 @@ The expected output:
 ```
 Note: 
 - The actual association between *image_id* and and *the actual image path* in the dataset is stored in the `dataset_meta.json` file in each data repository, for example [here](https://huggingface.co/datasets/lsr42/mscoco-blip-dense/blob/main/dataset_meta.json) with the mscoco dataset. 
-- Some other pretrained checkpoints are available in HuggingFace ([here](https://huggingface.co/lsr42?search_models=d2s)).
+- Some other pretrained checkpoints from the original paper are available in HuggingFace ([Original paper](https://huggingface.co/lsr42?search_models=d2s)), and from our reproducibility study ([Reproducibility paper](https://huggingface.co/ir2multimodal)).
 
 ## Citing and Authors
 If you find this repository helpful, please cite our paper [Multimodal Learned Sparse Retrieval with Probabilistic Expansion Control](link-to-be-updated)
