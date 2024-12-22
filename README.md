@@ -16,7 +16,7 @@ pip install -r requirements.txt
 
 ### 2. Train a model 
 ```
-python train.py --data doruktarhan6/mscoco-blip2avg-dense --train_batch_size 512 --eval_batch_size 1024  --q_reg 0.001 --d_reg 0.001  --temp 0.001 --use_amp --epochs 200 
+python train.py --data doruktarhan6/flickr30k-clip-dense --train_batch_size 512 --eval_batch_size 1024  --q_reg 0.001 --d_reg 0.001  --temp 0.001 --use_amp --epochs 200 
 ```
 List of available datasets: 
 | HF's repo | Dense Model | Dataset | 

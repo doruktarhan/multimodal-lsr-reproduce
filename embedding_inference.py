@@ -5,6 +5,7 @@ from loaders.dataset import MSCOCOdataset, Flickr30kdataset
 from loaders.dataloader import ImageCaptionDataset, create_data_loader, CustomCollateFn
 from models.blip import BLIP
 from models.blip2 import BLIP2AvgPooling,BLIP2MaxPooling
+from models.clip import CLIP
 import pandas as pd
 import shutil
 import zipfile
@@ -75,6 +76,9 @@ def main(args):
     elif args.model_name == "blip2max":
         model = BLIP2MaxPooling()
         processor = model.processor
+    elif args.model_name == "clip":
+        model = CLIP()
+        processor = model.processor
     else:
         raise ValueError(f"Unsupported model: {args.model_name}")
 
@@ -130,7 +134,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_name",
         type=str,
-        choices=["blip","blip2avg","blip2max"],  # Add more model options as you support them
+        choices=["blip","blip2avg","blip2max","clip"],  # Add more model options as you support them
         default="blip",
         help="Name of the model to use for embedding extraction. Options: 'blip'.",
     )
