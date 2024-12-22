@@ -5,6 +5,7 @@ from loaders.dataset import MSCOCOdataset, Flickr30kdataset
 from loaders.dataloader import ImageCaptionDataset, create_data_loader, CustomCollateFn
 from models.blip import BLIP
 from models.blip2 import BLIP2AvgPooling,BLIP2MaxPooling
+from models.clip import CLIP
 import pandas as pd
 
 # Global variable for image folder
@@ -49,11 +50,11 @@ def main(args):
     # Dataset and metadata initialization
     if args.dataset_name == "mscoco":
         #download and prepare the dataset
-        meta_data_path = 'meta_data/dataset_coco.json' # Path to the MSCOCO dataset
+        meta_data_path = 'meta_data_old_without_filtering/dataset_coco.json' # Path to the MSCOCO dataset
         dataset = MSCOCOdataset(meta_data_path,PATH_TO_MSCOCO_FOLDER)
         image_caption_pairs = dataset.get_image_caption_pairs()
     elif args.dataset_name == "flickr30k":
-        meta_data_path = 'meta_data/dataset_flickr30k.json' # Path to the MSCOCO dataset
+        meta_data_path = 'meta_data_old_without_filtering/dataset_flickr30k.json' # Path to the MSCOCO dataset
         dataset = Flickr30kdataset(meta_data_path,PATH_TO_FLICKR_FOLDER)
         image_caption_pairs = dataset.get_image_caption_pairs()
     else:
@@ -68,6 +69,9 @@ def main(args):
         processor = model.processor
     elif args.model_name == "blip2max":
         model = BLIP2MaxPooling()
+        processor = model.processor
+    elif args.model_name == "clip":
+        model = CLIP()
         processor = model.processor
     else:
         raise ValueError(f"Unsupported model: {args.model_name}")
@@ -124,8 +128,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_name",
         type=str,
-        choices=["blip","blip2avg","blip2max"],  # Add more model options as you support them
-        default="blip",
+        choices=["blip","blip2avg","blip2max","clip"],  # Add more model options as you support them
+        default="clip",
         help="Name of the model to use for embedding extraction. Options: 'blip'.",
     )
     
