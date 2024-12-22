@@ -25,7 +25,8 @@ List of available datasets:
 | ```lsr42/flickr30k-blip-dense``` | BLIP | Flickr30k | 
 | ```lsr42/mscoco-albef-dense``` | ALBEF | MSCOCO |
 | ```lsr42/flickr30k-albef-dense``` | ALBEF | Flickr30k | 
-
+| ```ir2multimodal/textcaps-blip-dense``` | BLIP | TextCaps | 
+| ```ir2multimodal/textcaps-albef-dense``` | ALBEF | TextCaps | 
 ### 3. Load a pretrained model and run inference 
 
 To load a pretrained model:
